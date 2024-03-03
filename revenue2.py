@@ -12,6 +12,7 @@ class Revenue():
         self.input_list = []
         self.csat = []
         self.churn = []
+        self.clv = []
         
     def validate_row(self,row):
         return row[0]+row[1]+row[2] == 20
@@ -22,7 +23,12 @@ class Revenue():
                 if not self.validate_row(row):
                     raise ValueError("Bad Input")
             except:
-                raise ValueError("Input is Bad")
+                raise ValueError("Input is Bad- row doesn't equal 20")
+        try:
+            if len(self.input_list) != 24:
+                raise ValueError("Bad Input")
+        except:
+            raise ValueError("Input is Bad- does not have 24 rows")
 
     def input(self):
         with open(self.input_file,mode="r") as infile:
@@ -113,6 +119,13 @@ class Revenue():
             # TRUNC(PREV_CUS*(1-CHURN)+25+5*SALE_REPS)
             self.customers += [math.trunc(previous_customers*(1-self.churn[i])+25+self.input_list[i][0]*5)]
         
+        # ARPU * LT = MRR / Customers * 1 / Churn
+    def calculate_clv(self):
+        for i in range(len(self.total_revenue)):
+            self.clv.append(self.total_revenue[i]/self.customers[i]*1/self.churn[i])
+            
+    def get_clv(self):
+        return self.clv
 
 if __name__=="__main__":
     rc = Revenue()
@@ -120,8 +133,11 @@ if __name__=="__main__":
     rc.calculate_customers()
     rc.calculate_account_managers()
     rc.calculate_revenue()
+    rc.calculate_clv()
     # pprint.pprint(rc.get_account_managers())
-    for (i,item) in enumerate(rc.get_revenue_list()):
-        print(i, "  ", item)
+    for (i,item) in enumerate(rc.get_clv()):
+        print( item)
+    print(rc.get_customers())
+    # print(rc.get_revenue_list())
     print(rc.get_revenue())
     
